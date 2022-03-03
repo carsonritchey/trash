@@ -1,37 +1,56 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 
+#define NAME "trash"
 #define TRASHCAN_DIRECTORY "~/.trashcan"
 #define DEFAULT_PERMS 777
 
-int main(int argc, char* argv[]) {
-    if(argc != 3) {
-        printf("trash: please provide sufficient arguments\n");
-        return 0;
-    }
+char* home_dir;
 
-    FILE* file1, *file2;
-    file1 = fopen(argv[1], "r");
-    file2 = fopen(argv[2], "w");
+bool move(char* source_dir, char* destination_dir) {
+    FILE* source, *destination;
+    source = fopen(source_dir, "r");
+    destination = fopen(destination_dir, "w");
 
-    if(!file1) {
-        printf("trash: '%s' was not found\n", argv[1]);
-        return 0;
+    if(!source) {
+        printf("%s: '%s' was not found\n", NAME, source_dir);
+        return false;
     }
-    if(!file2) {
-        printf("trash: unable to move '%s' to '%s': no such file or directory\n", argv[1], argv[2]);
-        return 0;
+    if(!destination) {
+        printf("%s: unable to move '%s' to '%s': no such file or directory\n", NAME, source_dir, destination_dir);
+        return false;
     }
 
     int c;
-    while((c = fgetc(file1)) != EOF)
-        fputc(c, file2);
+    while((c = fgetc(source)) != EOF)
+        fputc(c, destination);
 
-    fclose(file1);
-    fclose(file2);
+    fclose(source);
+    fclose(destination);
 
-    remove(argv[1]);
+    remove(source_dir);
+
+	return true;
+}
+
+int main(int argc, char* argv[]) {
+	home_dir = getenv("HOME");
+	if(home_dir == NULL) {
+		printf("$HOME path variable not found\nexiting ...\n");
+		return 0;
+	}
+
+	printf("%s\n", home_dir);
+
+    if(argc != 3) {
+        printf("%s: please provide sufficient arguments\n", NAME);
+        return 0;
+    }
+
+	move(argv[1], argv[2]);
 
     return 0;
 }
+
