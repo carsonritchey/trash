@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
-#include <dirent.h>
 
 #define TRASHCAN_DIRECTORY "~/.trashcan"
 #define DEFAULT_PERMS 777
