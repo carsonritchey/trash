@@ -7,10 +7,29 @@
 #define NAME "trash"
 // gets concatinated onto the home dir 
 #define TRASHCAN_DIRECTORY "/.trashcan"
-#define DEFAULT_PERMS 777
+#define DEFAULT_PERMS 0777
 
 // absolute path to trashcan
 char* trashcan_dir;
+
+bool create_trashcan();
+bool init();
+bool move_to_trash(char* source_dir);
+
+int main(int argc, char* argv[]) {
+	if(!init()) {
+		printf("%s: failed to initialize\nexiting ...\n", NAME);
+	}
+
+    if(argc != 2) {
+        printf("%s: please provide a file for disposal\n", NAME);
+        return 0;
+    }
+
+	move_to_trash(argv[1]);
+
+    return 0;
+}
 
 // checks to see if trashcan exists and creates it if it doesn't
 bool create_trashcan() {
@@ -42,16 +61,21 @@ bool init() {
 	return true;
 }
 
-// moves a file from one location to another
-bool move(char* source_dir, char* destination_dir) {
-    FILE* source, *destination;
-    source = fopen(source_dir, "r");
-    destination = fopen(destination_dir, "w");
-
+// moves file to trashcan dir
+bool move_to_trash(char* source_dir) {
+    FILE* source = fopen(source_dir, "r");
     if(!source) {
         printf("%s: '%s' was not found\n", NAME, source_dir);
         return false;
     }
+
+    // trashcan_dir + / + source_dir + \0 
+    char* destination_dir = (char*)malloc( (strlen(trashcan_dir) + strlen(source_dir) + 1 + 1) * sizeof(char));
+    strcpy(destination_dir, trashcan_dir);
+    strcat(destination_dir, "/");
+    strcat(destination_dir, source_dir);
+
+    FILE* destination = fopen(destination_dir, "w");
     if(!destination) {
         printf("%s: unable to move '%s' to '%s': no such file or directory\n", NAME, source_dir, destination_dir);
         return false;
@@ -65,22 +89,9 @@ bool move(char* source_dir, char* destination_dir) {
     fclose(destination);
 
     remove(source_dir);
+    free(destination_dir);
 
 	return true;
 }
 
-int main(int argc, char* argv[]) {
-	if(!init()) {
-		printf("%s: failed to initialize\nexiting ...\n", NAME);
-	}
-
-    if(argc != 3) {
-        printf("%s: please provide sufficient arguments\n", NAME);
-        return 0;
-    }
-
-	move(argv[1], argv[2]);
-
-    return 0;
-}
 
