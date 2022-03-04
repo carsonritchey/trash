@@ -7,12 +7,14 @@
 #define NAME "trash"
 // gets concatinated onto the home dir 
 #define TRASHCAN_DIRECTORY "/.trashcan"
+// permissions for trashcan directory 
 #define DEFAULT_PERMS 0777
 
 // absolute path to trashcan
 char* trashcan_dir;
 
 bool create_trashcan();
+bool exists(char* file);
 bool init();
 bool move_to_trash(char* source_dir);
 
@@ -41,6 +43,12 @@ bool create_trashcan() {
 	}
 
 	return true;
+}
+
+// returns wether or not a file exists
+bool exists(char* file) {
+	struct stat st;
+	return (stat(file, &st) == 0);
 }
 
 bool init() {
