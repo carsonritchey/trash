@@ -17,6 +17,7 @@ bool create_trashcan();
 bool exists(char* file);
 bool init();
 bool move_to_trash(char* source_dir);
+char* shorten_path(char* path);
 
 int main(int argc, char* argv[]) {
 	if(!init()) {
@@ -81,7 +82,7 @@ bool move_to_trash(char* source_dir) {
     char* destination_dir = (char*)malloc( (strlen(trashcan_dir) + strlen(source_dir) + 1 + 1) * sizeof(char));
     strcpy(destination_dir, trashcan_dir);
     strcat(destination_dir, "/");
-    strcat(destination_dir, source_dir);
+    strcat(destination_dir, shorten_path(source_dir));
 
     FILE* destination = fopen(destination_dir, "w");
     if(!destination) {
@@ -102,4 +103,16 @@ bool move_to_trash(char* source_dir) {
 	return true;
 }
 
+// returns a pointer to the filename of a given path
+// /home/name/file -> file
 
+// may need to remove trailing / in the future.. idk 
+char* shorten_path(char* path) {
+	char* last_start = path;
+
+	for(int i = 1; *(path+i) != '\0'; i++) {
+		if(*(path+i) == '/' && *(path+i+1) != '\0') last_start = path+i+1;
+	}
+
+	return last_start; 
+}
