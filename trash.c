@@ -19,17 +19,33 @@ bool init();
 bool move_to_trash(char* source_dir);
 char* shorten_path(char* path);
 
+// flags
+bool clear_f = false; const char clear_c = 'c';
+
 int main(int argc, char* argv[]) {
 	if(!init()) {
 		printf("%s: failed to initialize\nexiting ...\n", NAME);
 	}
 
-    if(argc != 2) {
+    int flag_offset = 0;
+    for(int i = 1; i < argc; i++) {
+        if(argv[i][0] == '-') {
+            for(int j = 1; j < strlen(argv[i]); j++) {
+                printf("%c", argv[i][j]);
+            }
+
+            flag_offset++; 
+        } else break;
+    }
+
+    if(clear_f) printf("we clearing\n");
+
+    if(argc != 2 + flag_offset) {
         printf("%s: please provide a file for disposal\n", NAME);
         return 0;
     }
 
-	move_to_trash(argv[1]);
+	move_to_trash(argv[1 + flag_offset]);
 
     return 0;
 }
