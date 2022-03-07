@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <dirent.h>
 #include <sys/stat.h>
 
 #define NAME "trash"
@@ -14,10 +15,11 @@
 char* trashcan_dir;
 
 bool create_trashcan();
-bool exists(char* file);
+bool clear_trashcan();
+bool exists(char*);
 bool init();
-bool move_to_trash(char* source_dir);
-char* shorten_path(char* path);
+bool move_to_trash(char*);
+char* shorten_path(char*);
 
 // flags
 bool clear_f = false; const char clear_c = 'c';
@@ -31,7 +33,7 @@ int main(int argc, char* argv[]) {
     for(int i = 1; i < argc; i++) {
         if(argv[i][0] == '-') {
             for(int j = 1; j < strlen(argv[i]); j++) {
-                printf("%c", argv[i][j]);
+                if(argv[i][j] == clear_c) clear_trashcan();
             }
 
             flag_offset++; 
@@ -60,6 +62,31 @@ bool create_trashcan() {
 	}
 
 	return true;
+}
+
+// removes all files in trashcan_dir
+bool clear_trashcan() {
+    DIR* d;
+    struct dirent* dir;
+
+    d = opendir(trashcan_dir);
+    if(d) {
+        while((dir = readdir(d)) != NULL) {
+            if(strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) continue;
+            if(dir->d_type == DT_DIR) continue;
+
+            // trashcan_dir + / + dir->d_name + \0
+            char* absolute = (char*)malloc((strlen(trashcan_dir) + 1 + strlen(dir->d_name) + 1) * sizeof(char));
+            strcpy(absolute, trashcan_dir);
+            strcat(absolute, "/");
+            strcat(absolute, dir->d_name);
+
+            remove(absolute);
+            free(absolute);
+        }
+
+        closedir(d);
+    }
 }
 
 // returns wether or not a file exists
@@ -121,8 +148,6 @@ bool move_to_trash(char* source_dir) {
 
 // returns a pointer to the filename of a given path
 // /home/name/file -> file
-
-// may need to remove trailing / in the future.. idk 
 char* shorten_path(char* path) {
 	char* last_start = path;
 
