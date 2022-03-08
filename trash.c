@@ -15,7 +15,7 @@
 char* trashcan_dir;
 
 bool create_trashcan();
-bool clear_trashcan();
+void clear_trashcan();
 bool exists(char*);
 bool init();
 bool move_to_trash(char*);
@@ -40,10 +40,8 @@ int main(int argc, char* argv[]) {
         } else break;
     }
 
-    if(clear_f) printf("we clearing\n");
-
     if(argc != 2 + flag_offset) {
-        printf("%s: please provide a file for disposal\n", NAME);
+        if(!clear_f) printf("%s: please provide a file for disposal\n", NAME);
         return 0;
     }
 
@@ -65,7 +63,9 @@ bool create_trashcan() {
 }
 
 // removes all files in trashcan_dir
-bool clear_trashcan() {
+void clear_trashcan() {
+    int t = 0;
+    clear_f = true;
     DIR* d;
     struct dirent* dir;
 
@@ -81,12 +81,19 @@ bool clear_trashcan() {
             strcat(absolute, "/");
             strcat(absolute, dir->d_name);
 
+            t++;
             remove(absolute);
             free(absolute);
         }
 
         closedir(d);
     }
+
+    if(t == 0) {
+        printf("trashcan was already empty\n");
+        return;
+    }
+    printf("cleared %s: (%d files removed)\n", trashcan_dir, t);
 }
 
 // returns wether or not a file exists
