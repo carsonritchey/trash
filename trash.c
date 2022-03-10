@@ -5,6 +5,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+#define PATH_MAX 4096
+
 #define NAME "trash"
 // gets concatinated onto the home dir 
 #define TRASHCAN_DIRECTORY "/.trashcan"
@@ -75,15 +77,13 @@ void clear_trashcan() {
             if(strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) continue;
             if(dir->d_type == DT_DIR) continue;
 
-            // trashcan_dir + / + dir->d_name + \0
-            char* absolute = (char*)malloc((strlen(trashcan_dir) + 1 + strlen(dir->d_name) + 1) * sizeof(char));
+			char absolute[PATH_MAX];
             strcpy(absolute, trashcan_dir);
             strcat(absolute, "/");
             strcat(absolute, dir->d_name);
 
             t++;
             remove(absolute);
-            free(absolute);
         }
 
         closedir(d);
@@ -128,8 +128,7 @@ bool move_to_trash(char* source_dir) {
         return false;
     }
 
-    // trashcan_dir + / + source_dir + \0 
-    char* destination_dir = (char*)malloc( (strlen(trashcan_dir) + strlen(source_dir) + 1 + 1) * sizeof(char));
+	char destination_dir[PATH_MAX]; 
     strcpy(destination_dir, trashcan_dir);
     strcat(destination_dir, "/");
     strcat(destination_dir, shorten_path(source_dir));
@@ -148,7 +147,6 @@ bool move_to_trash(char* source_dir) {
     fclose(destination);
 
     remove(source_dir);
-    free(destination_dir);
 
 	return true;
 }
